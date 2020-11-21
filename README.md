@@ -1,2 +1,8 @@
-# LSSVM-TNKF (Least Squares Support Vector Machines - Tensor Network Kalman Filter)
-Recursive tensor network bayesian learning of large-Scale LS-SVMs. 
+# LSSVM-TNKF 
+
+(Least Squares Support Vector Machines - Tensor Network Kalman Filter)
+
+Recursive tensor network Bayesian learning of large-Scale LSSVMs. 
+In this repository, the TNKF implementations on three datasets are stored.
+
+
