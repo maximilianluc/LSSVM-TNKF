@@ -1,0 +1,244 @@
+classdef TTKalmanFilter < TT_class
+    %TTKALMANFILTER - Tensor train Kalman filter
+    %   This is a class designed to contain the main methods//properties of
+    %   the TT Kalman filter wrt the LSSVM problem.
+    
+    properties
+        A = TT_class();       % the A system matrix -> in TT object form
+        m_meas = TT_class();  % the A system matrix -> in TT object form (Changes per row/iteration in data matrix)
+        P_meas = TT_class();  % the covariance matrix -> in TT object form (changes per iteration)
+        Q = TT_class();
+        
+        
+    end
+    
+    methods(Static)
+        
+        
+        %%
+        function [TTKF_output, StabilityVecs] = TTKF_method(LSSVM,m0_TT,P0_TTM,R0,Q0_TTM,Trunc_Par,n,d,lambda,ConvCond,TTVSumVector)
+            
+            m_meas  = m0_TT;
+            P_meas  = P0_TTM;
+            Q       = Q0_TTM;
+            R       = R0;
+            n       = n;
+            d       = d;
+            %Peig = zeros(n^d,n^d);
+            sum_alphas = zeros(n^d+1,1);
+            P_meas_squared_FrobNorm = zeros(n^d+1,1);
+            
+            %%%% Initialize
+            P_meas_squared_FrobNorm(1) = (P_meas.SV_squared); %sqrt
+            
+            for k=1:n^d+1  %+1 because first row is "ones"
+                
+                %% Description of this for loop
+                k 
+                
+                
+                %% Analysis
+                if strcmp(ConvCond.EarlyStopping, 'yes')
+                    if strcmp(ConvCond.type,'regression')
+                        sum_alphas_vec(k)         = ContractTTtoTensor(ContractTwoTT(m_meas,TTVSumVector,2,2));
+                    elseif strcmp(ConvCond.type,'classification')
+                        alpha_vec = reshape(ContractTTtoTensor(m_meas),[n^d 1]);
+                        alpha_times_labels =  alpha_vec.*LSSVM.labels;
+                        sum_alphas_vec(k) = sum(alpha_times_labels);
+                    end
+                end
+                P_meas_squared_FrobNorm(k)    = (P_meas.SV_squared); %sqrt for frob norm-> squared forb norm=sum of SVs squared
+                             
+                
+                %% Convergence Checks
+                
+                if k>1
+                    if strcmp(ConvCond.EarlyStopping,'yes')
+                        ConvergenceStatus = TTKalmanFilter.ConvergenceCheck(ConvCond,sum_alphas_vec(k),P_meas_squared_FrobNorm,k);
+                    else
+                        ConvergenceStatus =0;
+                    end
+                    
+                    if ConvergenceStatus==1
+                        
+
+                        
+                        for i=1:25
+                            disp('Possibly converged! Party party party!')
+                            
+                        end
+                        pause(3)
+                        TTKF_output = [m_meas, P_meas];
+                        StabilityVecs = [P_meas_squared_FrobNorm sum_alphas];
+                        return
+                    end
+                    
+                end
+                
+                
+                
+                %% Kalman Filter Prediction Step in TT Form
+                
+                %%%%% STEP 1
+                m_pred = m_meas;
+                %   m_pred = TTRounding(m_pred,Trunc_Par.Eps_m,Trunc_Par.RankTrunc_m);
+                
+                
+                %%%%% STEP 2
+                % Covariance updated.
+                P_pred  = P_meas;
+                P_pred.Cores{P_pred.NumCores} = P_pred.Cores{P_pred.NumCores}*(lambda);
+                P_pred = TTRounding(P_pred,Trunc_Par.Eps_P,Trunc_Par.RankTrunc_P);
+                
+                if P_pred.MaxRank > Trunc_Par.DefaultMaxR
+                    error('Large ranks P_pred')
+                end
+                
+                
+                %% Kalman Filter Update Step in TT Form
+                %%%%% STEP 3
+                % Transform the row of the LSSVM matrix to TT form
+                
+                if k==1 
+                    if strcmp(LSSVM.type,'regression')
+                        Trunc_Par.Eps_C0 = 0;
+                        Trunc_Par.RankTrunc_C0 = 1;
+                        C_k = TT_class(ones(1,n^d),n,d,Trunc_Par.Eps_C0,Trunc_Par.RankTrunc_C0,1);
+                    end
+                    if strcmp(LSSVM.type,'classification')
+                        C_k = TT_class(LSSVM.labels,n,d,Trunc_Par.Eps_C,Trunc_Par.RankTrunc_C,1);
+                    end
+                elseif k>1
+                    i = k-1; % because Xp does not have first row "ones" 
+                    if strcmp(LSSVM.KernelFunc,'Linear')
+                        Kernel_row = LinearKernelMax(LSSVM.Xp,LSSVM.gamma,n,d,i);
+                    elseif strcmp(LSSVM.KernelFunc,'RBF')
+                        Kernel_row = RBFKernelMax(LSSVM.Xp,LSSVM.gamma,LSSVM.sig2,n,d,i);
+                    end
+                    C_k = TT_class(Kernel_row,n,d,Trunc_Par.Eps_C,Trunc_Par.RankTrunc_C,1);
+                end
+                 
+                
+                %%%%% STEP 4
+                % Find the prediction error
+                v_k = LSSVM.OutputVec(k) - ContractTTtoTensor(ContractTwoTT(C_k,m_pred,2,2));
+                
+                %%%%% STEP 5
+                % Find the measurement covariance (S_k) - multiple steps
+                S_k_RC              = ContractTwoTT(P_pred,C_k,3,2);
+%                 if S_k_RC.MaxRank > Trunc_Par.DefaultMaxR
+%                    S_k_RC              = TTRounding(S_k_RC,Trunc_Par.MAXEps,Trunc_Par.MAXrank);
+%                 end
+                S_k_RC              = TTRounding(S_k_RC,Trunc_Par.Eps_S_k,Trunc_Par.RankTrunc_S_k);
+                S_k_LC              = ContractTwoTT(C_k,S_k_RC,2,2);
+                S_k_scalar          = ContractTTtoTensor(S_k_LC);
+                S_k                 = S_k_scalar + R;                   % scalar
+                if S_k_RC.MaxRank > Trunc_Par.DefaultMaxR   
+                    error('Large rank S_k ranks')
+                end
+                
+                
+                %%%%% STEP 6
+                % Compute the Kalman gain (K_k)
+                K_k_LC                                 = ContractTwoTT(P_pred,C_k,3,2);
+                %   K_k_LC                                 = TTRounding(K_k_LC,Trunc_Par.Eps_K_k,Trunc_Par.RankTrunc_K_k);
+                K_k_LC.Cores{K_k_LC.NumCores}          = K_k_LC.Cores{K_k_LC.NumCores}.*(1/S_k);
+                K_k                                    = K_k_LC ;
+                K_k =  TTRounding(K_k,Trunc_Par.Eps_K_k,Trunc_Par.RankTrunc_K_k);
+                if K_k.MaxRank > Trunc_Par.DefaultMaxR
+                    error('Large rank K_k ranks')
+                end
+                
+                
+                %%%%% STEP 7
+                % compute the measured state (m_meas) by looking at the measured output
+                KG = K_k;
+                KG.Cores{KG.NumCores} = KG.Cores{KG.NumCores} * v_k;
+                
+                m_meas      = Add2TTs(m_pred,KG); %m_pred + K_k*v_k
+                m_meas      = TTRounding(m_meas,Trunc_Par.Eps_m,Trunc_Par.RankTrunc_m);
+                
+                if m_meas.MaxRank > Trunc_Par.DefaultMaxR
+                    error('Large rank m_meas ranks')
+                end
+                
+                %%%%% STEP 8
+                % compute the measured state covariance (P_meas) by looking at the
+                % measured output
+                
+                K_OutProd  = OuterProductTwoTTV(K_k,K_k);
+                K_OutProd  = TTRounding(K_OutProd,Trunc_Par.Eps_K_k,Trunc_Par.RankTrunc_K_k);
+                K_OutProd.Cores{K_OutProd.NumCores} = K_OutProd.Cores{K_OutProd.NumCores}.*(-S_k); %last core has norm -> multiply with S
+                
+%                 if K_OutProd.MaxRank > Trunc_Par.DefaultMaxR
+%                     k
+%                     error('Large rank K_out ranks')
+%                 end
+                
+                P_meas = Add2TTs(P_pred,K_OutProd);
+                P_meas = TTRounding(P_meas,Trunc_Par.Eps_P,Trunc_Par.RankTrunc_P);
+                
+                if P_meas.MaxRank > Trunc_Par.DefaultMaxR
+                    error('Large rank P_meas ranks')
+                end
+                
+                %%% Find the confidence bounds on alpha(k)
+                
+                if k==n^d+1
+                    disp('Finished iterations')
+                end
+                
+                
+                
+            end
+            
+            
+            TTKF_output = [m_meas, P_meas];
+            StabilityVecs = [P_meas_squared_FrobNorm sum_alphas]; 
+        end
+        
+        
+        
+        
+        %%
+        function ConvergenceStatus = ConvergenceCheck(ConvCond,sum_alphas,P_meas_squared_FrobNorm,k)
+            
+            %%%%
+            % • ConvergenceStatus = 0 : not converged!
+            % • ConvergenceStatus = 1 : possibly converged! -> then we should
+            
+            ConvergenceStatus = 0;  % unless if statements accepted
+            
+            if P_meas_squared_FrobNorm(k) <= 0.00001
+                ConvergenceStatus = 1;
+            end
+            
+            %k+1 because first index is initial (P0)
+            if (P_meas_squared_FrobNorm(k)/P_meas_squared_FrobNorm(1) < ConvCond.FactorRemainingUncertainty) && (sum_alphas <  ConvCond.SumAlphaBound) && ConvergenceStatus ~= 1
+                
+                if k>(ConvCond.FactorMinUncertaintChangeNumIter+1)  %only after (ConvCond.FactorMinUncertaintChangeNumIter+1)
+                    
+                    %%% Condition 3: Norm difference per iteration
+                    if P_meas_squared_FrobNorm(k) ~= 0 && k>(ConvCond.FactorMinUncertaintChangeNumIter+1)
+                        ChangeNorm = P_meas_squared_FrobNorm((k):-1:(k-ConvCond.FactorMinUncertaintChangeNumIter))./P_meas_squared_FrobNorm(k-1:-1:(k-1-ConvCond.FactorMinUncertaintChangeNumIter));
+                        PercChangeNormIter = 1-ChangeNorm
+                    end
+                    % • if all change in percentages > 0 -> (more certainty)
+                    % stable. • if all change in percentges < bound, possibly
+                    % converged.
+                    if (all(PercChangeNormIter>0)) && (all(PercChangeNormIter<ConvCond.FactorMinUncertaintChangeIter))
+                        ConvergenceStatus = 1;
+                    end
+                end
+                
+            end
+            
+            if (P_meas_squared_FrobNorm(k)/P_meas_squared_FrobNorm(k-1) > 1)
+                warning('P-norm increased: less confidence in estimate!')
+            end
+        end
+        
+        
+        
+    end
+end
