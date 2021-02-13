@@ -145,11 +145,6 @@ toc
 alpha_TT = TTKF_output(1);
 covariance_TT = TTKF_output(2);  
 
-%% Training performance  - unnecessary
-
-% [y_training,y_tra_variance] = TTRegression(alpha_TT,covariance_TT,Trunc_Par,R,b_p,sig2,X_p,X_p,n_t,d_t,n,n,LSSVM);
-% RMSE_TT_training = sqrt((1/length(Y_p))*(sum((y_training-Y_p).^2)))
-
 %% Validation Performance
 profile off
 profile on
