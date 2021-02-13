@@ -10,8 +10,7 @@ y_variance   = zeros(n_test^d_test,1);
 classifier_function = zeros(n_test^d_test,1); 
 
  %%% Instead of programming hadamard, i'll just do .* with the vectors
-    % - lack of time, thesis needs to be written and finished soooon :/ 
-    % - this does not require that much extra time, but isnt optimal.
+    % - computationally this does not require that much extra time, but it isnt optimal.
     alpha_vec = reshape(ContractTTtoTensor(alpha_TT),[n_prac^d_prac 1]);
     alpha_times_labels =  alpha_vec.*LSSVM.labels;
     alpha_k_y_k = TT_class(alpha_times_labels,n_prac,d_prac,0.001,20,1);
