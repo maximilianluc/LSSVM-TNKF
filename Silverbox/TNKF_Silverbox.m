@@ -97,8 +97,6 @@ Y_p = Y_p-b_p;
 
 %%% Specify the input and output data for validation and test sets
 
-%type = 'function estimation';
-
 
 %%% Assign kernel parameters
 KernelFunc = 'RBF';      % 'Linear' or 'RBF' 
@@ -142,7 +140,7 @@ scaling_m0 = 0; % only the alpha weights
 m0 = TT_class.GenRankOneTT(n_p,d_p,1,scaling_m0);
 
 %%%%% Create the initial R measurement scalar %%%%%
-scaling_R =  5*10^-7;   % What I have measured from the first 1800 samples
+scaling_R =  5*10^-7;   
 R = scaling_R;      % Variance value of R -> sigma^2 -- variance on Yp
 
 %%%%% Create the initial Q TTM noise - set scaling to zero if unused  %%%%%
