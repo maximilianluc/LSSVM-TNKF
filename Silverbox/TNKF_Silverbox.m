@@ -190,28 +190,6 @@ toc
 alpha_TT = TTKF_output(1);
 covariance_TT = TTKF_output(2);  
 
-%% Training performance  - unnecessary
-
-[y_training,y_tra_variance] = TTRegression(alpha_TT,covariance_TT,Trunc_Par,R,0,sig2,X_p,X_p,n_t,d_t,n_p,d_p,LSSVM);
-
-% 
-%% 
-%  q = figure
-%  plot(Y_p,'b-')
-%  hold on
-%  plot(y_training,'r-')
-%  hold on
-%  
-% title('model TT')
-% plot(t,y_training,'r-')
-% grid on
-% title('Training performance TTKF')
-% xlabel('Time [s]')
-% ylabel('Output data, acceleration at the shaker [m/s^2]')
-% axis([t(1) t(end) -7 7])
-% legend('TTKF','Output')
-%saveas(q,sprintf('Training%d.png',k)); % will create FIG1, FIG2,...
-
 %% Test Performance
 
 
@@ -244,18 +222,6 @@ plot(Y_t,'b-')
 hold on
 plot(y_test,'r-')
 hold on
-
-%title('model TT')
-% plot(t,y_validation,'r-')
-% plot(t,y_upperbound,'g*')
-% plot(t,y_lowerbound,'g*')
-%grid on
-%title('Validation performance TTKF')
-%xlabel('Time [s]')
-%ylabel('Output data, acceleration at the shaker [m/s^2]')
-% axis([t(1) t(end) -7 7])
-%legend('TTKF','Output')
-%saveas(h,sprintf('Validation%d.png',k)); % will create FIG1, FIG2,...
 
 
 %RMSE_TT_training
