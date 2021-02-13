@@ -9,6 +9,7 @@ clc
 % t: test / validation
 n=2;
 d=16;
+step = 4; %(validation is every fourth point of the practice spiral)
 
 %%% Practice data
 label1 = ones(0.5*(n^d),1);
@@ -18,19 +19,17 @@ labels = [label1;label2];
 [Spiral2_Xp,Spiral2_Yp] = SpiralFunction(6,180,n,d,pi);
 
 X_p = ([Spiral1_Xp,Spiral1_Yp;Spiral2_Xp,Spiral2_Yp]);
+X_t = ([Spiral1_Xp(1:step:end),Spiral1_Yp(1:step:end);Spiral2_Xp(1:step:end),Spiral2_Yp(1:step:end)]);
 
-%%% Test data                             
-[Spiral1_Xt,Spiral1_Yt] = SpiralFunction(6,180,n,d,0);
-[Spiral2_Xt,Spiral2_Yt] = SpiralFunction(6,180,n,d,pi);
-
-X_t = ([Spiral1_Xt,Spiral1_Yt;Spiral2_Xt,Spiral2_Yt]);
-
-labels_correct_validation = [ones(0.5*(n^(d)),1);-ones(0.5*(n^(d)),1)]; %already sorted!
+labels_correct_validation = [ones(0.5*(length(X_t)),1);-ones(0.5*(length(X_t)),1)]; %already sorted!
 
 figure(1)
 plot(X_p(:,1),X_p(:,2),'g*')
 hold on
 plot(X_t(:,1),X_t(:,2),'k.')
+
+% plot(Spiral1_X,Spiral1_Y,'b*'),hold on,
+% plot(Spiral2_X,Spiral2_Y,'r*')
 
 %% Kernel, Hyperparameters, NARX structure selections
 
