@@ -135,22 +135,4 @@ RMSE_training_Nystrom
 RMSE_test_Nystrom
 [~,fit,~] = compare(data_v,data_t)
 
-% %% Search for good gamma 
-% for i=1:20
-%     gam = 0.5*10^(i-10);
-%     diagD = diag(D);
-%     alpha = gam*(Y_p_nomean - (V*inv((1/gam)*eye(length(D))+diagD*(V'*V)))*diagD*V'*Y_p_nomean);
-% 
-%     [Ypred_training, Zp] = simlssvm({X_p,Y_p_nomean,'function estimation',gam,sig2,'RBF_kernel','original'}, {alpha,b_p}, X_p);
-%     [Ypred_validation, Zp] = simlssvm({X_p,Y_p_nomean,'function estimation',gam,sig2,'RBF_kernel','original'}, {alpha,b_p}, X_t);
-% 
-%     data_t = iddata(Y_t,X_t);
-%     data_v = iddata(Ypred_validation,X_t);
-%     RMSE_training_Nystrom = sqrt((1/length(Y_p))*(sum((Ypred_training-Y_p).^2)))
-%     RMSE_val_Nystrom = sqrt((1/length(Y_t))*(sum((Ypred_validation-Y_t).^2)))
-%     [~,fit,~] = compare(data_v,data_t)
-% 
-%     perf_gamma(:,i) = [RMSE_training_Nystrom;RMSE_val_Nystrom; fit; gam]
-%     
-%     
-% end
+
