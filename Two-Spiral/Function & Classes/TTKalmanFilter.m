@@ -47,14 +47,8 @@ classdef TTKalmanFilter < TT_class
                         sum_alphas_vec(k) = sum(alpha_times_labels);
                     end
                 end
-                P_meas_squared_FrobNorm(k)    = (P_meas.SV_squared); %sqrt for frob norm-> squared forb norm=sum of SVs squared
-                %
-%                                 P = ContractTTtoTensor(P_meas);
-%                                 P = reshape(P,[n^d n^d]);
-%                 %
-%                 %
-%                                 Peig(:,k) = sort(eig(P));
-%                                 
+                P_meas_squared_FrobNorm(k)    = (P_meas.SV_squared); 
+                
                 
                 %% Convergence Checks
                 
@@ -65,19 +59,7 @@ classdef TTKalmanFilter < TT_class
                         ConvergenceStatus =0;
                     end
                     
-                    if ConvergenceStatus==1
-                        
-                        % not accirate
-                        
-%                         for index=0:1:(n^d)-1
-%                             SelectionVec = [zeros(1,index) 1 zeros(1,(n^d)-1-index)];
-%                             TT_SelVec    = TT_class(SelectionVec,n,d,0,inf,1);
-%                             Var_right    = ContractTwoTT(P_meas,TT_SelVec,3,2);
-%                             Var_left     = ContractTwoTT(TT_SelVec,Var_right,2,2);
-%                             Variance(index+1,1)     = ContractTTtoTensor(Var_left);
-%                         end
-                        
-                        
+                    if ConvergenceStatus==1  
                         for i=1:25
                             disp('Possibly converged! Party party party!')
                             
@@ -138,30 +120,7 @@ classdef TTKalmanFilter < TT_class
                     end
                     C_k = TT_class(Kernel_row,n,d,Trunc_Par.Eps_C,Trunc_Par.RankTrunc_C,1);
                 end
-                
-                
-                
-                
-                %                 if k>2
-                %
-                %                     CmatrixTTM = OuterProductTwoTTV(C_k,C_k);
-                %                     TTMupdate = ContractTwoTT(CmatrixTTM,P_meas,3,2);
-                %                     TTMupdate = TTRounding(TTMupdate,0,inf);
-                %
-                %                     Skupdate = ContractTwoTT(C_k,P_meas,2,2);
-                %                     Skupdate = ContractTwoTT(Skupdate,C_k,2,2);
-                %                     Skupdate = ContractTTtoTensor(Skupdate);
-                %                     Skupdate = S_k_scalar + R;
-                %
-                %
-                %                     TTMupdate.Cores{TTMupdate.NumCores} = TTMupdate.Cores{TTMupdate.NumCores}*(1/Skupdate);
-                %                     UpdateTTM(:,:,k-1) = reshape(ContractTTtoTensor(TTMupdate),[n^d n^d]);
-                %
-                %                 end
-                
-                
-                
-                
+
                 %%%%% STEP 4
                 % Find the prediction error
                 v_k = LSSVM.OutputVec(k) - ContractTTtoTensor(ContractTwoTT(C_k,m_pred,2,2));
@@ -240,53 +199,7 @@ classdef TTKalmanFilter < TT_class
                     disp('Finished iterations')
                 end
                 
-                %                 if k==size(LSSVM.Matrix,1)
-                %                     k=k+1;
-                %                     sum_alphas(k)         = ContractTTtoTensor(ContractTwoTT(m_meas,SumVector,2,2));
-                %                     P_meas_squared_FrobNorm(k)    = P_meas.SV_squared;
-                %                     P = ContractTTtoTensor(P_meas);
-                %                     P = reshape(P,[n^d n^d]);
-                %                     Peig(:,k) = sort(eig(P));
-                %                 end
-                
-                
-                
-                % Make P symmetric
-                %                                     P_meas = ContractTTtoTensor(P_meas);
-                %                                     P_meas = reshape(P_meas,[n^d n^d]);
-                %                                     P_meas = 0.5*(P_meas+P_meas');
-                %                                     P_meas = TT_class(P_meas,n,2*d,0,inf,2);
-                %
-                %
-                %
-                
-                
-                %if k == 1 || k == round(0.25*n^d) || k == round(0.5*n^d) || k == round(0.75*n^d) || k==n^d
-                %                        figure(k+1)
-                %                        image(P_matrix,'CDataMapping','scaled'), colorbar
-                %                        pause(0.5)
-                %end
-                
-                %                 if k==size(LSSVM.Matrix,1)
-                %
-                %                     CmatrixTTM = OuterProductTwoTTV(C_k,C_k);
-                %                     TTMupdate = ContractTwoTT(CmatrixTTM,P_meas,3,2);
-                %                     TTMupdate = TTRounding(TTMupdate,0,inf);
-                %
-                %                     Skupdate = ContractTwoTT(C_k,P_meas,2,2);
-                %                     Skupdate = ContractTwoTT(Skupdate,C_k,2,2);
-                %                     Skupdate = ContractTTtoTensor(Skupdate);
-                %                     Skupdate = S_k_scalar + R;
-                %
-                %
-                %                     TTMupdate.Cores{TTMupdate.NumCores} = TTMupdate.Cores{TTMupdate.NumCores}*(1/Skupdate);
-                %                     UpdateTTM(:,:,k) = reshape(ContractTTtoTensor(TTMupdate),[n^d n^d]);
-                %
-                %                 end
-                
-                
-                
-                
+
                 
             end
             
@@ -335,15 +248,10 @@ classdef TTKalmanFilter < TT_class
                         ConvergenceStatus = 1;
                     end
                 end
-                
-                
-                %elseif P_meas_FrobNorm(k+1)/P_meas_FrobNorm(1)>1
-                %error('Check ConvCond FactorRemainingUncertainty')
+               
                 
             end
             
-            
-            %P_meas_squared_FrobNorm(k)/P_meas_squared_FrobNorm(k-1);
             
             
             if (P_meas_squared_FrobNorm(k)/P_meas_squared_FrobNorm(k-1) > 1)
