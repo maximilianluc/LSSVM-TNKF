@@ -1,4 +1,4 @@
-%% The Run file for the F16 data set
+%% The Run file for the Two-Spiral problem
 clear all
 close all
 clc
