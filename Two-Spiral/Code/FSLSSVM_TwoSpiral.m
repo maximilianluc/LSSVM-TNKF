@@ -8,6 +8,8 @@ clc
 % t: test / validation
 
 n=2;d=16;
+step = 4; %(validation is every fourth point of the practice spiral)
+
 %%% Practice data
 label1 = ones(0.5*(n^d),1);
 label2 = -ones(0.5*(n^d),1);
@@ -16,19 +18,23 @@ Labels_p = [label1;label2];
 [Spiral2_Xp,Spiral2_Yp] = SpiralFunction(6,180,n,d,pi);
 
 X_p = ([Spiral1_Xp,Spiral1_Yp;Spiral2_Xp,Spiral2_Yp]);
+%%% Test data                             %180
+%[Spiral1_Xt,Spiral1_Yt] = SpiralFunction(6,180,n,d,0);
+%[Spiral2_Xt,Spiral2_Yt] = SpiralFunction(6,180,n,d,pi);
 
-%%% Test data                            
-[Spiral1_Xt,Spiral1_Yt] = SpiralFunction(6,180,n,d,0);
-[Spiral2_Xt,Spiral2_Yt] = SpiralFunction(6,180,n,d,pi);
+%X_t = ([Spiral1_Xt,Spiral1_Yt;Spiral2_Xt,Spiral2_Yt]);
+X_t = ([Spiral1_Xp(1:step:end),Spiral1_Yp(1:step:end);Spiral2_Xp(1:step:end),Spiral2_Yp(1:step:end)]);
 
-X_t = ([Spiral1_Xt,Spiral1_Yt;Spiral2_Xt,Spiral2_Yt]);
-
-Labels_t = [ones(0.5*(n^(d)),1);-ones(0.5*(n^(d)),1)]; %already sorted!
+Labels_t = [ones(0.5*(length(X_t)),1);-ones(0.5*(length(X_t)),1)]; %already sorted!
 
 figure(1)
 plot(X_p(:,1),X_p(:,2),'g*')
 hold on
 plot(X_t(:,1),X_t(:,2),'k.')
+
+% plot(Spiral1_X,Spiral1_Y,'b*'),hold on,
+% plot(Spiral2_X,Spiral2_Y,'r*')
+
 
 
 %% initial values
