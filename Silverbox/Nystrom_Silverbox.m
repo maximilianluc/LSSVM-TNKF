@@ -74,17 +74,6 @@ end
 Y_p = V2(1,  begin_point_p:stepsize_p:begin_point_p+(testsize_p)*stepsize_p -1)';
 Y_t = V2(1,  begin_point_t:stepsize_t:begin_point_t+(testsize_t)*stepsize_t -1)';
 
-% Sort the data according to norm
-%[~,I_p] = sort(Y_p,'descend');
-%[~,I_p] = sort(vecnorm(Y_p,1,2),'descend');
-%X_p = X_p(I_p,:);
-%Y_p = Y_p(I_p,:);
-
-%[~,I_t] = sort(Y_t,'descend');
-%[~,I_t] = sort(vecnorm(Y_t,1,2),'descend');
-%X_t = X_t(I_t,:);
-%Y_t = Y_t(I_t,:);
-
 
 
 b_p = mean(Y_p);
@@ -116,16 +105,7 @@ alpha = gam*(Subset_output - (V*inv((1/gam)*eye(length(D))+diagD*(V'*V)))*diagD*
 [Ypred_training, Zp] = simlssvm({Subset,Subset_output,'function estimation',gam,sig2,'RBF_kernel','original'}, {alpha,b_p}, Subset);
 [Y_test_pred, Zp] = simlssvm({Subset,Subset_output,'function estimation',gam,sig2,'RBF_kernel','original'}, {alpha,b_p}, X_t);
 
-
-%% Unsort
-%X_p = X_p(I_p,:);
-%Y_p = Y_p(I_p,:);
-%Ypred_training = Ypred_training(I_p,:);
 RMSE_training_Nystrom = sqrt((1/length(Subset_output))*(sum((Ypred_training-Subset_output).^2)))
-
-%X_t = X_t(I_t,:);
-%Y_t = Y_t(I_t,:);
-%Y_test_pred = Y_test_pred(I_t,:);
 RMSE_test_Nystrom = sqrt((1/length(Y_t))*(sum((Y_test_pred-Y_t).^2)))
 
 
