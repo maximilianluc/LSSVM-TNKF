@@ -39,14 +39,25 @@ plot(X_t(:,1),X_t(:,2),'k.')
 
 gam  = 0.05;                                                    
 sig2 = 5e-5; 
-nb = 25;
+nb = 500;
+
+S = n^15;
+RandPermutation = randperm(length(X_p))
+Subset = X_p(RandPermutation(1:S),:)
+Subset_labels = Labels_p(RandPermutation(1:S),:)
 
 tic
-[V, D] = eign(X_p, 'RBF_kernel', sig2, nb);
+[V, D] = eign(Subset, 'RBF_kernel', sig2, nb);
 diagD = diag(D);
-alpha = gam*(Labels_p - (V*inv((1/gam)*eye(length(D))+diagD*(V'*V)))*diagD*V'*Labels_p);
+alpha = gam*(Subset_labels - (V*inv((1/gam)*eye(length(D))+diagD*(V'*V)))*diagD*V'*Subset_labels);
 toc 
 
+
+
+%%
+b_p=0;
+[Ylabels_training, Zp] = simlssvm({Subset,Subset_labels,'c',gam,sig2,'RBF_kernel'}, {alpha,b_p}, Subset);
+[Ylabels_validation, Zp] = simlssvm({Subset,Subset_labels,'c',gam,sig2,'RBF_kernel'}, {alpha,b_p}, X_t);
 
 
 %%
