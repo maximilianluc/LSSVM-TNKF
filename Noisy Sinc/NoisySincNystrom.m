@@ -43,20 +43,26 @@ Y_t_nomean = Y_t_perm;
 
 gam  = 0.005;                                              
 sig2 = 0.005;
-nb = 250;
+nb = 750;
+
+S = 2^13;
+RandPermutation = randperm(length(X_p))
+Subset = X_p(RandPermutation(1:S),:)
+Subset_output = Y_p_nomean(RandPermutation(1:S),:)
 
 
 %%
 tic
-[V, D] = eign(X_p, 'RBF_kernel', sig2, nb);
+
+[V, D] = eign(Subset, 'RBF_kernel', sig2, nb);
 toc
 diagD = diag(D);
-alpha = gam*(Y_p_nomean - (V*inv((1/gam)*eye(length(D))+diagD*(V'*V)))*diagD*V'*Y_p_nomean);
+alpha = gam*(Subset_output - (V*inv((1/gam)*eye(length(D))+diagD*(V'*V)))*diagD*V'*Subset_output);
  
-[Ypred_training, Zp] = simlssvm({X_p,Y_p_nomean,'function estimation',gam,sig2,'RBF_kernel','original'}, {alpha,b_p}, X_p);
-[Ypred_validation, Zp] = simlssvm({X_p,Y_p_nomean,'function estimation',gam,sig2,'RBF_kernel','original'}, {alpha,b_p}, X_t);
+[Ypred_training, Zp] = simlssvm({Subset,Subset_output,'function estimation',gam,sig2,'RBF_kernel','original'}, {alpha,b_p}, Subset);
+[Ypred_validation, Zp] = simlssvm({Subset,Subset_output,'function estimation',gam,sig2,'RBF_kernel','original'}, {alpha,b_p}, X_t);
 
-RMSE_training_Nystrom = sqrt((1/length(Y_p))*(sum((Ypred_training-Y_p).^2)))
+RMSE_training_Nystrom = sqrt((1/length(Y_p))*(sum((Ypred_training-Subset_output).^2)))
 RMSE_val_Nystrom = sqrt((1/length(Y_t))*(sum((Ypred_validation-Y_t).^2)))
 
 plot(X_t,Y_t,'b.')
