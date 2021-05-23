@@ -44,7 +44,7 @@ b    = 0;
 %%%%% Convergence conditions %%%%%
 ConvCond.EarlyStopping = 'yes';             % 'yes' or 'no'
 ConvCond.type = 'classification';           % 'classification' or 'regression' 
-ConvCond.FactorRemainingUncertainty         = 1e-20;%   % relative to P0 = percentage - of squared sv's
+ConvCond.FactorRemainingUncertainty         = 1e-10;%   % relative to P0 = percentage - of squared sv's
 ConvCond.FactorMinUncertaintChangeIter      = 5e-3;    % factor/percentage uncertainty change per iteration of the squared sv's  (choose larger than 1/(n_p^d_p))
 ConvCond.FactorMinUncertaintChangeNumIter   = 2; %round(0.01*(n^n));    % after passing through 1% of rows, if the trace change stays below...
 ConvCond.SumAlphaBound                      = 1;  %0.0001;                 % total error of normalized ('preprocessed system')
