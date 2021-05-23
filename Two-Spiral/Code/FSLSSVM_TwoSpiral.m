@@ -7,8 +7,8 @@ clc
 % p: practice / training
 % t: test / validation
 
-n=2;d=16;
-step = 4; %(validation is every fourth point of the practice spiral)
+n=2;d=20;
+step = 4; %(validation is every fourth point of the practice spiral) so 2^18
 
 %%% Practice data
 label1 = ones(0.5*(n^d),1);
