@@ -3,11 +3,11 @@ clear all
 close all
 clc
 
-
 %% Identification Data
 
 n=2;
-d=16;
+d=20;
+step = 4; %(validation is every fourth point of the practice spiral)
 
 %%% Practice data
 label1 = ones(0.5*(n^d),1);
@@ -18,33 +18,22 @@ Labels_p = labels;
 [Spiral2_Xp,Spiral2_Yp] = SpiralFunction(6,180,n,d,pi);
 
 X_p = ([Spiral1_Xp,Spiral1_Yp;Spiral2_Xp,Spiral2_Yp]);
+X_t = ([Spiral1_Xp(1:step:end),Spiral1_Yp(1:step:end);Spiral2_Xp(1:step:end),Spiral2_Yp(1:step:end)]);
 
-%%% Test data                             %180
-[Spiral1_Xt,Spiral1_Yt] = SpiralFunction(6,180,n,d,0);
-[Spiral2_Xt,Spiral2_Yt] = SpiralFunction(6,180,n,d,pi);
-
-X_t = ([Spiral1_Xt,Spiral1_Yt;Spiral2_Xt,Spiral2_Yt]);
-
-labels_correct_validation = [ones(0.5*(n^(d)),1);-ones(0.5*(n^(d)),1)]; %already sorted!
-Labels_t = labels_correct_validation; 
-figure(1)
-plot(X_p(:,1),X_p(:,2),'g*')
-hold on
-plot(X_t(:,1),X_t(:,2),'k.')
-
-
+labels_correct_validation = [ones(0.5*(length(X_t)),1);-ones(0.5*(length(X_t)),1)]; %already sorted!
+Labels_t = labels_correct_validation;
 
 %% initial values
 %%% Here the initial values are
 
 gam  = 0.05;                                                    
-sig2 = 5e-5; 
-nb = 500;
+sig2 = 5e-8; 
+nb = 250;
 
-S = n^15;
-RandPermutation = randperm(length(X_p))
+S = 2^14;
+RandPermutation = randperm(length(X_p));
 Subset = X_p(RandPermutation(1:S),:)
-Subset_labels = Labels_p(RandPermutation(1:S),:)
+Subset_labels = Labels_p(RandPermutation(1:S),:);
 
 tic
 [V, D] = eign(Subset, 'RBF_kernel', sig2, nb);
@@ -58,12 +47,6 @@ toc
 b_p=0;
 [Ylabels_training, Zp] = simlssvm({Subset,Subset_labels,'c',gam,sig2,'RBF_kernel'}, {alpha,b_p}, Subset);
 [Ylabels_validation, Zp] = simlssvm({Subset,Subset_labels,'c',gam,sig2,'RBF_kernel'}, {alpha,b_p}, X_t);
-
-
-%%
-b_p=0;
-[Ylabels_training, Zp] = simlssvm({X_p,Labels_p,'c',gam,sig2,'RBF_kernel'}, {alpha,b_p}, X_p);
-[Ylabels_validation, Zp] = simlssvm({X_p,Labels_p,'c',gam,sig2,'RBF_kernel'}, {alpha,b_p}, X_t);
 
 
 num_correct      = sum(Ylabels_validation == Labels_t);
