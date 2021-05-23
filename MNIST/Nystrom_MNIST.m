@@ -34,10 +34,10 @@ Labels_t_all = bigger_5_t-smallereq_4_t;
 %% Initialization
 
 n_p = 3;
-d_p = 9;
+d_p = 10;
 
 n_t = 3;
-d_t = 7;
+d_t = 8;
 
 X_p = X_p_all(1:n_p^d_p,:);
 Labels_p = Labels_p_all(1:n_p^d_p,:);
