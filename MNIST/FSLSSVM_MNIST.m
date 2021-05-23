@@ -32,10 +32,10 @@ smallereq_4_t = Labels_t_all(:,1) <= 4;  %label 1
 Labels_t_all = bigger_5_t-smallereq_4_t;
 
 n_p = 3;
-d_p = 9;
+d_p = 10;
 
 n_t = 3;
-d_t = 7;
+d_t = 8;
 
 X_p = X_p_all(1:n_p^d_p,:);
 Labels_p = Labels_p_all(1:n_p^d_p,:);
@@ -56,7 +56,7 @@ Labels_t = Labels_t_all(1:n_t^d_t,:);
 
 gam  = 0.05; %   best gamma around 0.00005 - 0.0005                                             
 sig2 = 5;  %best sigma around 0.5
-Nc= 800;
+Nc= 250;
 
 %Z
 % load data X and Y, ’capacity’ and the kernel parameter ’sig2’
