@@ -1,4 +1,4 @@
-%% FSLSSVM for the MNIST dataset
+%%
 clear all
 close all
 clc
@@ -7,61 +7,36 @@ clc
 % p: practice / training
 % t: test / validation
 
-train_data = readtable('mnist_train.csv');
-test_data  = readtable('mnist_test.csv');
 
-%%Option 1: The input images to grayscale [0-1] by dividing by 255.
-%X_p_all = train_data{:,2:end}/255;
-%X_t_all = test_data{:,2:end}/255;
+n=2;
+d=20;
+step = 4; %(validation is every fourth point of the practice spiral)
 
-%%Option 2: The input images (rows) normalized
-X_p_all = normalize(train_data{:,2:end},2);
-X_t_all = normalize(test_data{:,2:end},2);
+%%% Practice data
+label1 = ones(0.5*(n^d),1);
+label2 = -ones(0.5*(n^d),1);
+labels = [label1;label2];
+Labels_p = labels;
+[Spiral1_Xp,Spiral1_Yp] = SpiralFunction(6,180,n,d,0);
+[Spiral2_Xp,Spiral2_Yp] = SpiralFunction(6,180,n,d,pi);
 
+X_p = ([Spiral1_Xp,Spiral1_Yp;Spiral2_Xp,Spiral2_Yp]);
+X_t = ([Spiral1_Xp(1:step:end),Spiral1_Yp(1:step:end);Spiral2_Xp(1:step:end),Spiral2_Yp(1:step:end)]);
 
-%The labels [0-9] 
-Labels_p_all = train_data{:,1};
-Labels_t_all = test_data{:,1};
+labels_correct_validation = [ones(0.5*(length(X_t)),1);-ones(0.5*(length(X_t)),1)]; %already sorted!
+Labels_t = labels_correct_validation;
 
-bigger_5_p  = Labels_p_all(:,1) >= 5;  %label -1
-smallereq_4_p = Labels_p_all(:,1) <= 4;  %label 1
-Labels_p_all = bigger_5_p - smallereq_4_p;
-
-bigger_5_t  = Labels_t_all(:,1) >= 5;  %label -1
-smallereq_4_t = Labels_t_all(:,1) <= 4;  %label 1
-Labels_t_all = bigger_5_t-smallereq_4_t;
-
-n_p = 3;
-d_p = 10;
-
-n_t = 3;
-d_t = 8;
-
-X_p = X_p_all(1:n_p^d_p,:);
-Labels_p = Labels_p_all(1:n_p^d_p,:);
-
-%%% Can sort training data (note sorting has no influence)
-% [Labels_p,I] = sort(Labels_p,'descend');
-% X_p = X_p(I,:);
-
-X_t = X_t_all(1:n_t^d_t,:); 
-Labels_t = Labels_t_all(1:n_t^d_t,:);
-
-%%% Can sort test data 
-% [Labels_t,I_t] = sort(Labels_t,'descend');
-% X_t = X_t(I_t,:);
 
 %% initial values
 %%% Here the initial values are
 
-gam  = 0.05; %   best gamma around 0.00005 - 0.0005                                             
-sig2 = 5;  %best sigma around 0.5
-Nc= 250;
+gam =0.05;
+sig2= 5e-8;
+Nc=250;  
 
-%Z
-% load data X and Y, ’capacity’ and the kernel parameter ’sig2’
+%% 
 sv = 1:Nc;
-max_c = -inf;
+max_c = -inf; 
 tic 
 for i=1:size(X_p,1)
     i
@@ -72,23 +47,24 @@ for i=1:size(X_p,1)
 end
 toc
 %%
+
 b_p = 0; 
 features_training = AFEm(X_p(sv,:),'RBF_kernel',sig2, X_p);
 [W,b] = ridgeregress(features_training, Labels_p, gam); 
-Y_training_pred = sign(features_training*W+b_p);
+labels_training = sign(features_training*W+b_p);
 features_val = AFEm(X_p(sv,:),'RBF_kernel',sig2, X_t);
 labels_validation = sign(features_val*W+b_p);
+
+
+%% Training performance 
+num_correct_p      = sum(labels_training == Labels_p);
+num_incorrect_p    = length(labels_training)-num_correct_p;
+percentage_wrong_p = num_incorrect_p/length(labels_training)
+percentage_right_p = num_correct_p/length(labels_training)
 
 num_correct      = sum(labels_validation == Labels_t);
 num_incorrect    = length(labels_validation)-num_correct;
 percentage_wrong = num_incorrect/length(labels_validation)
 percentage_right = num_correct/length(labels_validation)
-
-
-
-
-
-
-
 
 
