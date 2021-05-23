@@ -1,8 +1,9 @@
-# LSSVM-TNKF 
+# Least Squares Support Vector Machines - Tensor Network Kalman Filter
 
-(Least Squares Support Vector Machines - Tensor Network Kalman Filter)
+This repository contains the code for the paper: "Tensor Network Kalman Filtering for Large-Scale LSSVMs"
+There are five TNKF implementations on different datasets. 
 
-Recursive tensor network Bayesian learning of large-Scale LSSVMs. 
-In this repository, the TNKF implementations on five datasets are stored.
+Note: The datasets are not all my own work, please credit/cite the respective people and institutions for these!
+
 
 
