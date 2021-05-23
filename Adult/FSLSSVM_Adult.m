@@ -37,9 +37,9 @@ Labels_t = Labels_unsorted((n_p^d_p)+1:(n_p^d_p)+(n_t^d_t)+1);
 %% initial values
 %%% Here the initial values are
 
-gam  = 0.0015; %   best gamma around 0.00005 - 0.0005                                             
-sig2 = 0.5;  %best sigma around 0.5
-Nc= 1500;
+gam  = 0.0015;                                  
+sig2 = 0.5;  
+Nc= 500;
 
 %Z
 % load data X and Y, ’capacity’ and the kernel parameter ’sig2’
