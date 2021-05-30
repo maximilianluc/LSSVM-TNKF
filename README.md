@@ -1,4 +1,4 @@
-# Least Squares Support Vector Machines - Tensor Network Kalman Filter
+# Tensor Network Kalman Filter for Large-Scale Least Squares Support Vector Machines 
 
 This repository contains the code for the paper: "Tensor Network Kalman Filtering for Large-Scale LSSVMs".
 
